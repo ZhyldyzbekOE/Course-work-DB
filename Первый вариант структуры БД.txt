@@ -37,7 +37,7 @@
 		<type label="SET" length="1" sql="SET" quote=""/>
 		<type label="Bit" length="0" sql="bit" quote=""/>
 	</group>
-</datatypes><table x="717" y="266" name="student">
+</datatypes><table x="766" y="206" name="student">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -50,10 +50,6 @@
 <row name="id_subgroups" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="subgroups" row="id" />
-</row>
-<row name="id_groups" null="1" autoincrement="0">
-<datatype>INTEGER</datatype>
-<default>NULL</default><relation table="groups" row="id" />
 </row>
 <key type="PRIMARY" name="">
 <part>id</part>
@@ -70,7 +66,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="1065" y="67" name="student_subject">
+<table x="1077" y="70" name="student_subject">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -86,7 +82,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="519" y="406" name="groups">
+<table x="436" y="206" name="groups">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -97,13 +93,17 @@
 <part>id</part>
 </key>
 </table>
-<table x="496" y="224" name="subgroups">
+<table x="583" y="379" name="subgroups">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <row name="name_subgroups" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
+<row name="id_groups" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="groups" row="id" />
+</row>
 <key type="PRIMARY" name="">
 <part>id</part>
 </key>
@@ -130,7 +130,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="1023" y="233" name="rates">
+<table x="1006" y="273" name="rates">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -145,7 +145,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="1191" y="233" name="attendacne">
+<table x="1204" y="248" name="attendacne">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -161,3 +161,4 @@
 </key>
 </table>
 </sql>
+
