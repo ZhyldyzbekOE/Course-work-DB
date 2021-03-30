@@ -8,15 +8,19 @@ public class Main {
     public static void main(String[] args) {
 
         StudSubjectServices studSubjectServices = new StudSubjectServicesImpl();
+
         studSubjectServices.connection();
-//      studSubjectServices.addSubject();
+//        studSubjectServices.addSubject();
         studSubjectServices.selectSubject();
-       // studSubjectServices.addGroup();
-        studSubjectServices.selectGroup();
-       // studSubjectServices.addSubGroup();
-        studSubjectServices.selectSubGroup();
-        studSubjectServices.addStudent();
-        studSubjectServices.selectStudent();
+//        studSubjectServices.addGroup();
+       studSubjectServices.selectGroup();
+//        studSubjectServices.addSubGroup();
+       studSubjectServices.selectSubGroup();
+//        studSubjectServices.addStudent();
+     studSubjectServices.selectStudent();
+//
+        studSubjectServices.fill_group_student_subject();
+        studSubjectServices.addAttendance();
         studSubjectServices.close();
     }
 }
