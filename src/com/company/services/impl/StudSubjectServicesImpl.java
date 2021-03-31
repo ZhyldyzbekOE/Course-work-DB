@@ -32,7 +32,6 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:D:\\COURSEWORK\\course.db");
-            System.out.println("Success");
             return connection;
 
         }catch (Exception e){
@@ -52,6 +51,10 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     public void addSubject() {
 
         try {
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные предметы: ");
+            selectSubject();
+            System.out.println("--------------------------------------");
             System.out.print("Введите название предмета: ");
             String subjectName = scanner.next();
             Subject subject = new Subject(subjectName);
@@ -90,6 +93,10 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     @Override
     public void addGroup() {
         try {
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные группы: ");
+            selectGroup();
+            System.out.println("--------------------------------------");
             System.out.print("Введите номер/название группы: ");
             String groupName = scanner.next();
             Group group = new Group(groupName);
@@ -189,11 +196,12 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
             String studName = scanner.next();
             System.out.print("Введите фамилию студента: ");
             String studFam = scanner.next();
+            selectGroup();
             System.out.print("Введите название номер/название группы: ");
             String groupName = scanner.next();
 
+
             int id = id_subgroups(groupName); // для поиска id группы
-            //int idSubGr = id_groupSub(groupName,id);
             int idSubGr = id_groupSub(id);
 
             Student student = new Student(studName, studFam, idSubGr);
@@ -286,8 +294,15 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     public void fill_group_student_subject() {
 
         try {
+            System.out.println("Доступные предметы: ");
+            selectSubject();
+            System.out.println("--------------------------------------");
             System.out.print("Введите название предмета: ");
             String subjName = scanner.next();
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные группы: ");
+            selectGroup();
+            System.out.println("--------------------------------------");
             System.out.print("Введите группу: ");
             String groupName = scanner.next();
             System.out.print("Введите фамилию студента: ");
@@ -313,10 +328,19 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     @Override
     public void addAttendance() {
         try {
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные предметы: ");
+            selectSubject();
+            System.out.println("--------------------------------------");
             System.out.print("Введите название предмета: ");
             String subjName = scanner.next();
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные группы: ");
+            selectGroup();
+            System.out.println("--------------------------------------");
             System.out.print("Введите группу: ");
             String groupName = scanner.next();
+
             System.out.print("Введите фамилию студента: ");
             String fam = scanner.next();
             System.out.print("Введите имя студента: ");
@@ -331,7 +355,7 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
 
             String userAns;
             do {
-                System.out.print("Отметить успеваемость/посещаемость:  -  (y/n");
+                System.out.print("Отметить успеваемость/посещаемость:  -  (y/n): ");
                 userAns = scanner.next();
                 if (userAns.equals("n")){
                     break;
@@ -346,6 +370,9 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     }
 
     private void addMarkAndCheckedStud(int id_gss) {
+
+        System.out.print("Введите тип занятия: ");
+        String less_type = scanner.next();
 
         int check;
 //        do {
@@ -365,7 +392,7 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
         }
 
         int month, day, year;
-        System.out.println("Введите дату занятия) ");
+        System.out.println("Введите дату занятия");
 //        do {
             System.out.print("Месяц: ");
             month = scanner.nextInt();
@@ -388,7 +415,7 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
 
         try {
             statement = connection.createStatement();
-            String query = "INSERT INTO attendance (check_stud, mark, lesson_date, id_group_student_subject) VALUES ('"+check+"','"+mark+"', '"+date+"','"+id_gss+"')";
+            String query = "INSERT INTO attendance (check_stud, mark, lesson_date, id_group_student_subject, lesson_type) VALUES ('"+check+"','"+mark+"', '"+date+"','"+id_gss+"', '"+less_type+"')";
             statement.executeUpdate(query);
         }catch (Exception e){
             System.out.println(e.getMessage());
