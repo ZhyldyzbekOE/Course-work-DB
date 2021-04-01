@@ -22,4 +22,6 @@ public interface StudSubjectServices {
 
     void addAttendance();
 
+    void selectAttendance();
+
 }

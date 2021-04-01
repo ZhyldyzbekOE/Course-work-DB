@@ -49,14 +49,14 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     //Добавление предмета
     @Override
     public void addSubject() {
-
+        String subjectName = null;
         try {
             System.out.println("--------------------------------------");
             System.out.println("Доступные предметы: ");
             selectSubject();
             System.out.println("--------------------------------------");
             System.out.print("Введите название предмета: ");
-            String subjectName = scanner.next();
+            subjectName = scanner.next();
             Subject subject = new Subject(subjectName);
 
             String query = "INSERT INTO subject (subject_name) VALUES ('" + subject.getSubject() + "') ";
@@ -64,7 +64,7 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
             statement.executeUpdate(query);
             System.out.println("Предмет успешно добавлен!");
         }catch (Exception e){
-            System.out.print(e.getMessage());
+            System.out.println("Предмет: " + subjectName + " уже существует!");
         }
     }
 
@@ -293,22 +293,29 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     @Override
     public void fill_group_student_subject() {
 
+        String fam = null, name = null, subjName = null;
         try {
             System.out.println("Доступные предметы: ");
             selectSubject();
             System.out.println("--------------------------------------");
             System.out.print("Введите название предмета: ");
-            String subjName = scanner.next();
+            subjName = scanner.next();
             System.out.println("--------------------------------------");
             System.out.println("Доступные группы: ");
             selectGroup();
             System.out.println("--------------------------------------");
             System.out.print("Введите группу: ");
             String groupName = scanner.next();
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные студенты в группе : " + groupName);
+            selectRegStudentInGroup(groupName);
+            System.out.println("--------------------------------------");
             System.out.print("Введите фамилию студента: ");
-            String fam = scanner.next();
+            fam = scanner.next();
             System.out.print("Введите имя студента: ");
-            String name = scanner.next();
+            name = scanner.next();
+
+            //catchEqualsStudents();
 
             statement = connection.createStatement();
             int id_Group = id_subgroups(groupName);
@@ -323,6 +330,24 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
         }catch (Exception e){
             System.out.println(e.getMessage());
         }
+    }
+
+    private void selectRegStudentInGroup(String groupName) {
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT student.student_firstname, student.student_secondname FROM student \n" +
+                    " INNER JOIN subgroups ON student.id_subgroups = subgroups.id \n" +
+                    " INNER JOIN groups ON subgroups.id_group = groups.id WHERE groups.group_name = '"+groupName+"'";
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()){
+                String stud_name = rs.getString("student_firstname");
+                String stud_secName = rs.getString("student_secondname");
+                System.out.println(stud_secName+ " "+stud_name);
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+
     }
 
     @Override
@@ -340,7 +365,6 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
             System.out.println("--------------------------------------");
             System.out.print("Введите группу: ");
             String groupName = scanner.next();
-
             System.out.print("Введите фамилию студента: ");
             String fam = scanner.next();
             System.out.print("Введите имя студента: ");
@@ -367,6 +391,27 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
             System.out.println(e.getMessage());
             throw new RuntimeException("Запрос addAttendance не выполнен!");
         }
+    }
+
+    @Override
+    public void selectAttendance() {
+        System.out.println("--------------------------------------");
+        System.out.println("Доступные предметы: ");
+        selectSubject();
+        System.out.println("--------------------------------------");
+        System.out.print("Введите название предмета: ");
+        String subjName = scanner.next();
+        System.out.println("--------------------------------------");
+        System.out.println("Доступные группы: ");
+        selectGroup();
+        System.out.println("--------------------------------------");
+        System.out.print("Введите группу: ");
+        String groupName = scanner.next();
+        System.out.print("Введите фамилию студента: ");
+        String fam = scanner.next();
+        System.out.print("Введите имя студента: ");
+        String name = scanner.next();
+        // SELECT avg (mark) FROM attendance WHERE id_group_student_subject = 3
     }
 
     private void addMarkAndCheckedStud(int id_gss) {
