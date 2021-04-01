@@ -105,7 +105,7 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
             statement.executeUpdate(query);
             System.out.println("Группа успешно добавлена!");
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            System.out.println("Такая группа уже сущетсвует!");
         }
     }
 
@@ -131,11 +131,38 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     //Добавление (создание) подгруппы
     @Override
     public void addSubGroup() {
+        ArrayList<String> subgroup_names = new ArrayList<>();
         try {
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные группы: ");
+            selectGroup();
+            System.out.println("--------------------------------------");
             System.out.print("Введите название номер/название группы: ");
             String groupName = scanner.next();
+            try {
+                Statement statement1 = connection.createStatement();
+                String query = "SELECT name_subgroups, groups.group_name\n" +
+                        " FROM subgroups INNER JOIN groups \n" +
+                        " on subgroups.id_group = groups.id\n" +
+                        " WHERE groups.group_name = '"+groupName+"'";
+                ResultSet rs = statement1.executeQuery(query);
+                int i = 0;
+                while(rs.next()){
+                    subgroup_names.add(rs.getString("name_subgroups"));
+                    System.out.println(subgroup_names.get(i));
+                    i++;
+                }
+
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
             System.out.print("Введите навазние подгруппы: ");
             String subGroupName = scanner.next();
+            for (String item: subgroup_names) {
+                if (item.equals(subGroupName)){
+                    throw new RuntimeException("Такая подгруппа "+subGroupName+" в группе "+groupName+" уже существует!");
+                }
+            }
 
             int id = id_subgroups(groupName);
 
@@ -315,20 +342,45 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
             System.out.print("Введите имя студента: ");
             name = scanner.next();
 
-            //catchEqualsStudents();
+            int id_getStud = id_student(fam, name);
+            if(catchEqualsStudents(id_getStud)){
+                statement = connection.createStatement();
+                int id_Group = id_subgroups(groupName);
+                int id_subj = id_subjName(subjName);
+                int id_stud = id_student(fam,name);
 
-            statement = connection.createStatement();
-            int id_Group = id_subgroups(groupName);
-            int id_subj = id_subjName(subjName);
-            int id_stud = id_student(fam,name);
-
-            String query = "INSERT INTO group_student_subject(id_student, id_subject, id_group) " +
-                    " VALUES('"+id_stud+"', '"+id_subj+"', '"+id_Group+"')";
-            statement = connection.createStatement();
-            statement.executeUpdate(query);
+                String query = "INSERT INTO group_student_subject(id_student, id_subject, id_group) " +
+                        " VALUES('"+id_stud+"', '"+id_subj+"', '"+id_Group+"')";
+                statement = connection.createStatement();
+                statement.executeUpdate(query);
+            }
 
         }catch (Exception e){
             System.out.println(e.getMessage());
+        }
+    }
+
+    private boolean catchEqualsStudents(int id_getStud) {
+        ArrayList <Integer> id_students = new ArrayList<>();
+        int id = 0;
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT id_student from group_student_subject";
+            ResultSet rs = statement.executeQuery(query);
+            while (rs.next()){
+                id = rs.getInt("id_student");
+                id_students.add(id);
+            }
+            for (Integer i : id_students) {
+                if(i == id_getStud){
+                    throw new RuntimeException("Студент уже зарегистрирован на данный курс!");
+                }
+            }
+            statement.close();
+            return true;
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return false;
         }
     }
 
@@ -365,6 +417,10 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
             System.out.println("--------------------------------------");
             System.out.print("Введите группу: ");
             String groupName = scanner.next();
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные студенты: ");
+            selectRegStudentInGroup(groupName);
+            System.out.println("--------------------------------------");
             System.out.print("Введите фамилию студента: ");
             String fam = scanner.next();
             System.out.print("Введите имя студента: ");
@@ -374,7 +430,6 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
             int id_Group = id_subgroups(groupName);
             int id_subj = id_subjName(subjName);
             int id_stud = id_student(fam,name);
-
             int id_gss = id_GetGSS(id_Group, id_subj, id_stud);
 
             String userAns;
@@ -394,7 +449,7 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     }
 
     @Override
-    public void selectAttendance() {
+    public void selectTotalAttendance() {
         System.out.println("--------------------------------------");
         System.out.println("Доступные предметы: ");
         selectSubject();
@@ -407,6 +462,9 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
         System.out.println("--------------------------------------");
         System.out.print("Введите группу: ");
         String groupName = scanner.next();
+        System.out.println("Доступные студенты в группе : " + groupName);
+        selectRegStudentInGroup(groupName);
+        System.out.println("--------------------------------------");
         System.out.print("Введите фамилию студента: ");
         String fam = scanner.next();
         System.out.print("Введите имя студента: ");
