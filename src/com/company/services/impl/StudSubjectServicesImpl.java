@@ -18,12 +18,13 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
     //Закрытие соединения
     @Override
     public void close() {
-        try{
+
+        try {
             connection.close();
-        }catch(Exception e)
-        {
-            System.out.print(e.getMessage());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
+
     }
 
     //Соединение с БД
@@ -450,26 +451,120 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
 
     @Override
     public void selectTotalAttendance() {
-        System.out.println("--------------------------------------");
-        System.out.println("Доступные предметы: ");
-        selectSubject();
-        System.out.println("--------------------------------------");
-        System.out.print("Введите название предмета: ");
-        String subjName = scanner.next();
-        System.out.println("--------------------------------------");
-        System.out.println("Доступные группы: ");
-        selectGroup();
-        System.out.println("--------------------------------------");
-        System.out.print("Введите группу: ");
-        String groupName = scanner.next();
-        System.out.println("Доступные студенты в группе : " + groupName);
-        selectRegStudentInGroup(groupName);
-        System.out.println("--------------------------------------");
-        System.out.print("Введите фамилию студента: ");
-        String fam = scanner.next();
-        System.out.print("Введите имя студента: ");
-        String name = scanner.next();
-        // SELECT avg (mark) FROM attendance WHERE id_group_student_subject = 3
+        ArrayList<Integer> marks = new ArrayList<>();
+        ArrayList<Integer> posehaemost = new ArrayList<>();
+        double sumAVG = 0, avgMark = 0;
+        int count = 0, prozPos = 0;
+        int pos = 0;
+        int s = 0;
+        try {
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные предметы: ");
+            selectSubject();
+            System.out.println("--------------------------------------");
+            System.out.print("Введите название предмета: ");
+            String subjName = scanner.next();
+            System.out.println("--------------------------------------");
+            System.out.println("Доступные группы: ");
+            selectGroup();
+            System.out.println("--------------------------------------");
+            System.out.print("Введите группу: ");
+            String groupName = scanner.next();
+            System.out.println("Доступные студенты в группе : " + groupName);
+            selectRegStudentInGroup(groupName);
+            System.out.println("--------------------------------------");
+            System.out.print("Введите фамилию студента: ");
+            String fam = scanner.next();
+            System.out.print("Введите имя студента: ");
+            String name = scanner.next();
+
+            int id_subj = id_subjName(subjName);
+            int id_gr = id_subgroups(groupName);
+            int id_st = id_student(fam, name);
+            int id_gss = id_GetGSS(id_gr, id_subj, id_st);
+
+           if(check(id_subj,id_st)){
+                statement = connection.createStatement();
+                String query = "SELECT mark FROM attendance WHERE id_group_student_subject = '" + id_gss + "' ";
+                ResultSet rs = statement.executeQuery(query);
+
+                while (rs.next()) {
+                    int mark = rs.getInt("mark");
+                    marks.add(mark);
+                }
+                if (marks.size() <= 0) {
+                    System.out.println("У студента не оценок!");
+                }else {
+
+                    for (int i = 0; i < marks.size(); i++) {
+                        sumAVG += marks.get(i);
+                    }
+                    avgMark = sumAVG / marks.size();
+
+                    try {
+                        Statement statement1 = connection.createStatement();
+                        String qr = "select check_stud from attendance where attendance.id_group_student_subject = '"+id_gss+"'";
+                        ResultSet rs1 = statement1.executeQuery(qr);
+                        while (rs1.next()){
+                            pos = rs1.getInt("check_stud");
+                            posehaemost.add(pos);
+                        }
+
+                        for (Integer item:posehaemost) {
+                            if (item==1){
+                                count++;
+                            }
+                        }
+                        prozPos = count*100/posehaemost.size();
+                        rs1.close();
+                        statement1.close();
+                    }catch (Exception e){
+                        System.out.println(e.getMessage());
+                    }
+
+                }
+               System.out.println("--------------------------------------");
+               System.out.println("Статистика: ");
+               System.out.println("Предмет: " + subjName + "\n" +
+                       "Студент: " + fam + " " + name + "\n" +
+                       "Средняя оценка: " + avgMark+"\n"+
+                       "Процент посещяемости: "+prozPos+"%");
+
+        }
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private boolean check(int id_subj, int id_st) {
+        ArrayList<Integer> registrStud = new ArrayList<>();
+        int ids = 0, s = 0;
+        try {
+            Statement statement1 = connection.createStatement();
+            String query1 = "SELECT group_student_subject.id_student FROM group_student_subject WHERE group_student_subject.id_subject = '"+id_subj+"'";
+            ResultSet resultSet = statement1.executeQuery(query1);
+            while (resultSet.next()){
+                ids = resultSet.getInt("id_student");
+                registrStud.add(ids);
+            }
+            for (Integer item: registrStud) {
+                if (id_st!=item){
+                    s++;
+                }else {
+                    return true;
+                }
+            }
+            int z = registrStud.size();
+            if (s>=z){
+                resultSet.close();
+                statement1.close();
+                return false;
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        return false;
     }
 
     private void addMarkAndCheckedStud(int id_gss) {
@@ -478,38 +573,29 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
         String less_type = scanner.next();
 
         int check;
-//        do {
-            System.out.print("Отметить посещаемость : ( 1 - был(а) | 0 - не был(а): ");
-            check = scanner.nextInt();
-//        }while (check <=0 || check >=1);
+        System.out.print("Отметить посещаемость : ( 1 - был(а) | 0 - не был(а): ");
+        check = scanner.nextInt();
 
         System.out.print("Поставить оценку? (1 - да | 0 - нет): ");
         int yn = scanner.nextInt();
         int mark = 0;
         if (yn == 1){
 
-//            do {
-                System.out.print("Оценка: (1-5) - ");
-                mark = scanner.nextInt();
-//            }while (mark >= 1 || mark <= 5);
+            System.out.print("Оценка: (1-5) - ");
+            mark = scanner.nextInt();
         }
 
         int month, day, year;
         System.out.println("Введите дату занятия");
-//        do {
-            System.out.print("Месяц: ");
-            month = scanner.nextInt();
-//        }while (month >= 1 || month <= 12);
 
-//        do {
-            System.out.print("День: ");
-            day = scanner.nextInt();
-//        }while (day >= 1 || day <= 31);
+        System.out.print("Месяц: ");
+        month = scanner.nextInt();
 
-//        do {
-            System.out.print("Год: ");
-            year = scanner.nextInt();
-//        }while (year >= 2000);
+        System.out.print("День: ");
+        day = scanner.nextInt();
+
+        System.out.print("Год: ");
+        year = scanner.nextInt();
 
         String dd = String.valueOf(day);
         String mm = String.valueOf(month);
@@ -533,10 +619,12 @@ public class StudSubjectServicesImpl implements StudSubjectServices {
                     " AND group_student_subject.id_group = '"+id_group+"'";
             ResultSet rs = statement.executeQuery(query);
             int id = rs.getInt("id");
+            rs.close();
+            statement.close();
             return id;
 
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            System.out.println("Данный студент не зарегистрирован!");
         }
         return 0;
     }
